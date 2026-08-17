@@ -4,10 +4,11 @@ A Cyberpunk 2077 mod that lets you add custom radio stations — from local
 audio files or web streams — to the vehicle radio, the pocket radio, and
 physical radios placed around Night City.
 
-Frequency is a ground-up, clean-room rewrite by Artheriax. It contains **no
-code from the original radioExt mod**; it merely speaks the same station
-metadata format so existing station packs keep working (drop-in
-compatibility).
+Frequency is a ground-up rewrite by Artheriax. It contains **no borrowed
+code from the original radioExt mod** — radioExt served only as the
+**inspiration for the idea**. Frequency does, however, **support radioExt
+radios**: it speaks the same station metadata format so existing radioExt
+station packs keep working out of the box (drop-in compatibility).
 
 ## Features
 
@@ -107,5 +108,7 @@ for most problems.
 ## Credits
 
 - Uses [FMOD](https://www.fmod.com/) by Firelight Technologies.
-- Frequency is an independent rewrite; station-format compatibility with
-  radioExt exists so the community's packs keep working.
+- Frequency is an independent rewrite — no code from
+  [radioExt](https://github.com/justarandomguyintheinternet/CP77_radioExt)
+  was borrowed, only the idea was taken as inspiration.
+  radioExt station packs are supported for drop-in compatibility.
