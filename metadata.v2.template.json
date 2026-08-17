@@ -1,0 +1,19 @@
+{
+    "schemaVersion": 2,
+    "displayName": "88.7 Your Station Name",
+    "fm": 88.7,
+    "volume": 1.0,
+    "group": "",
+    "icon": "UIIcon.RadioHipHop",
+    "customIcon": {
+        "useCustom": false,
+        "inkAtlasPath": "path\\to\\custom\\atlas.inkatlas",
+        "inkAtlasPart": "custom_texture_part"
+    },
+    "stream": {
+        "url": ""
+    },
+    "order": [],
+    "songTitles": {
+    }
+}

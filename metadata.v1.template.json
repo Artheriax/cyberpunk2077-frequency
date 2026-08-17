@@ -1,0 +1,16 @@
+{
+    "displayName": "69.9 Your Station Name",
+    "fm": 69.9,
+    "volume": 1.0,
+    "icon": "UIIcon.RadioHipHop",
+    "customIcon": {
+        "useCustom": false,
+        "inkAtlasPath": "path\\to\\custom\\atlas.inkatlas",
+        "inkAtlasPart": "custom_texture_part"
+    },
+    "streamInfo": {
+        "isStream": false,
+        "streamURL": "https://example.com/stream.mp3"
+    },
+    "order": []
+}
