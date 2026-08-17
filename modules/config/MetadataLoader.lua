@@ -30,7 +30,7 @@ function MetadataLoader:FindHandler(raw)
 end
 
 --- Loads and normalizes the metadata.json of one station folder.
---- @param metadataPath string CET-mod-relative path to the metadata file
+--- @param metadataPath string game-root-relative path to the metadata file
 --- @param folderName string station folder name (for log messages)
 --- @return table|nil normalized config, string|nil error
 function MetadataLoader:Load(metadataPath, folderName)

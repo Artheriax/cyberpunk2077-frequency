@@ -45,15 +45,14 @@ function StationRegistry:IsSongFile(fileName)
 end
 
 --- Measures every song file in one station folder.
---- @param cetFolder string CET-mod-relative folder used with dir()
---- @param nativeRoot string bin/x64-relative root passed to the native plugin
+--- @param stationPath string game-root-relative folder (native plugin IO)
 --- @return array of { path = "folder\\file", length = seconds }
-function StationRegistry:MeasureSongs(stationId, cetFolder, nativeRoot)
+function StationRegistry:MeasureSongs(stationId, stationPath)
     local songs = {}
 
-    for _, fileName in ipairs(self.files:ListFiles(cetFolder)) do
+    for _, fileName in ipairs(self.files:ListFiles(stationPath)) do
         if self:IsSongFile(fileName) then
-            local nativePath = nativeRoot .. "\\" .. ModPaths.RadiosFolder .. "\\" .. stationId .. "\\" .. fileName
+            local nativePath = stationPath .. "\\" .. fileName
             local lengthMs = self.audio:GetSongLengthMs(nativePath)
             if lengthMs ~= 0 then
                 table.insert(songs, { path = stationId .. "\\" .. fileName, length = lengthMs / 1000 })
@@ -69,14 +68,13 @@ end
 
 --- Loads one station folder. Returns a Station or nil + error.
 function StationRegistry:LoadOne(stationId, position, source)
-    local cetFolder = ModPaths.StationFolder(stationId)
-    local nativeRoot = "plugins\\cyber_engine_tweaks\\mods\\" .. ModPaths.ModFolder
-    if source == "legacy" then
-        cetFolder = "../" .. ModPaths.LegacyModFolder .. "/" .. cetFolder
-        nativeRoot = "plugins\\cyber_engine_tweaks\\mods\\" .. ModPaths.LegacyModFolder
-    end
+    -- All station IO goes through the native plugin with game-root-relative
+    -- paths: CET's sandboxed io cannot reach folders outside this mod, so
+    -- the legacy radioExt root would be unreadable any other way.
+    local modFolder = source == "legacy" and ModPaths.LegacyModFolder or ModPaths.ModFolder
+    local stationPath = "plugins\\cyber_engine_tweaks\\mods\\" .. modFolder .. "\\" .. ModPaths.RadiosFolder .. "\\" .. stationId
 
-    local metadataPath = cetFolder .. "/metadata.json"
+    local metadataPath = stationPath .. "\\metadata.json"
     if not self.files:Exists(metadataPath) then
         return nil, "no metadata.json found"
     end
@@ -93,7 +91,7 @@ function StationRegistry:LoadOne(stationId, position, source)
 
     local songs = {}
     if not config.stream.isStream then
-        songs = self:MeasureSongs(stationId, cetFolder, nativeRoot)
+        songs = self:MeasureSongs(stationId, stationPath)
     end
 
     local station = Station({

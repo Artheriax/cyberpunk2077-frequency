@@ -13,7 +13,7 @@ local Class = require("modules/core/Class")
 
 local NativeBridge = Class.define("NativeBridge")
 
-NativeBridge.MIN_NATIVE_VERSION = "1.0.0"
+NativeBridge.MIN_NATIVE_VERSION = "1.1.0"
 
 function NativeBridge:initialize(logger)
     self.logger = logger
