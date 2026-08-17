@@ -39,6 +39,7 @@ public:
     void Tick();
 
     bool IsActive() const;
+    bool HasFailedFor(const std::string& aPath) const;
 
     void Shutdown();
 
