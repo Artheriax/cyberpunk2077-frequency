@@ -18,7 +18,11 @@ function Session:initialize()
 
     self.startCallbacks = {}
     self.endCallbacks = {}
+end
 
+--- Registers game hooks. Must be called from onInit, not at load time:
+--- CET only exposes `Observe` to mods after all init.lua files have run.
+function Session:RegisterHooks()
     Observe("RadialWheelController", "OnIsInMenuChanged", function(_, isInMenu)
         self.inMenu = isInMenu and true or false
     end)

@@ -16,8 +16,9 @@
         Frequency.StopVehicle()
         Frequency.SetDebug(true)
 
-    Other mods can grab the same table with `GetMod("Frequency")`.
-    The native RED4ext class remains available as `Frequency.Native`.
+    The API table is served through `GetMod("Frequency")` (CET sandboxed
+    mods cannot publish console globals). The native RED4ext class remains
+    available as `Frequency.Native` on that table.
 
     Written from scratch for Frequency.
 ]]

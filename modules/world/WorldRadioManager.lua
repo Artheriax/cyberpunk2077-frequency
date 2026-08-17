@@ -20,7 +20,14 @@ function WorldRadioManager:initialize(context)
     self.registry = context.registry
 
     self.emitters = {}        -- channel -> RadioEmitter
-    self.cameraTransform = Transform.new()
+    self.cameraTransform = nil -- created lazily; `Transform` isn't available at load time
+end
+
+function WorldRadioManager:GetCameraTransform()
+    if self.cameraTransform == nil then
+        self.cameraTransform = Transform.new()
+    end
+    return self.cameraTransform
 end
 
 function WorldRadioManager:FindEmitter(handle)
@@ -71,8 +78,9 @@ function WorldRadioManager:Update()
         return
     end
 
-    Game.GetCameraSystem():GetActiveCameraWorldTransform(self.cameraTransform)
-    self.audio:SetListener(self.cameraTransform.position, GetPlayer():GetWorldForward(), GetPlayer():GetWorldUp())
+    local cameraTransform = self:GetCameraTransform()
+    Game.GetCameraSystem():GetActiveCameraWorldTransform(cameraTransform)
+    self.audio:SetListener(cameraTransform.position, GetPlayer():GetWorldForward(), GetPlayer():GetWorldUp())
 end
 
 function WorldRadioManager:HandleMenu()

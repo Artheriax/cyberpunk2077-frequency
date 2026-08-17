@@ -41,12 +41,16 @@ function NativeBridge.VersionAtLeast(actual, required)
     return true
 end
 
---- Grabs the native class from the global environment. After the console
---- API is installed, the global `Frequency` points at the API table instead,
---- in which case the original reference is recovered from `Frequency.Native`.
+--- Grabs the native class from the environment. CET registers RTTI native
+--- classes (including `Frequency` from Frequency.dll) into the sandbox
+--- globals by the time onInit fires; before that the lookup yields nil.
+--- `_G` is not exposed to mods by CET's sandbox, so a defensive env lookup
+--- is used instead of rawget(_G, ...).
 local function resolveNativeGlobal()
-    local g = rawget(_G, "Frequency")
-    if g == nil then
+    local ok, g = pcall(function()
+        return Frequency
+    end)
+    if not ok then
         return nil
     end
     if type(g) == "table" and rawget(g, "__isFrequencyApi") == true then

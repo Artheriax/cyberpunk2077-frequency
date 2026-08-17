@@ -9,8 +9,8 @@
     code from, the original radioExt mod.
 
     CET entry point: wires up the services, registers the game hooks, and
-    exposes the console API as the global `Frequency` table (and via
-    GetMod("Frequency")).
+    exposes the console API via GetMod("Frequency") (served from the chunk's
+    return value below).
 ]]
 
 local Class = require("modules/core/Class")
@@ -123,8 +123,8 @@ function FrequencyMod:OnInit()
         return
     end
 
-    -- Re-pin the native reference now that it is guaranteed to exist,
-    -- before the global `Frequency` name is rebound to the API table below.
+    -- Re-pin the native reference now that CET has registered the native
+    -- class global; it was not resolvable while init.lua was loading.
     self.api.Native = self.nativeBridge:Get()
 
     self.modConfig:Load()
@@ -145,13 +145,12 @@ function FrequencyMod:OnInit()
     end)
 
     self.trainSystem = GetMod("trainSystem")
+    self.session:RegisterHooks()
     self.session:Refresh() -- in case CET reloaded all mods mid-session
 
-    -- Publish the console API. Companion mods can use GetMod("Frequency");
-    -- console users get the global `Frequency` table. The native class
-    -- stays reachable through Frequency.Native.
-    _G.Frequency = self.api
-
+    -- Companion mods reach the API through GetMod("Frequency"), which CET
+    -- serves from this chunk's return value. The sandboxed environment does
+    -- not expose `_G`, so a console global cannot be published here.
     self.ready = true
     self.logger:Infof("Initialized with %d station(s). Type Frequency.Help() for console commands.", self.registry:Count())
 end
