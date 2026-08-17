@@ -1,7 +1,7 @@
 #include "AudioEngine.hpp"
 
 #include "../Plugin.hpp"
-#include <fmod_studio_errors.h>
+#include <fmod_errors.h>
 
 namespace Frequency
 {

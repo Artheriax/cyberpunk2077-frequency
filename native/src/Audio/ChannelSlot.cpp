@@ -3,7 +3,7 @@
 #include "../Plugin.hpp"
 #include "AudioEngine.hpp"
 #include "../FmodUtils.hpp"
-#include <fmod_studio_errors.h>
+#include <fmod_errors.h>
 
 #include <algorithm>
 
