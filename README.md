@@ -15,7 +15,8 @@ station packs keep working out of the box (drop-in compatibility).
 - Unlimited custom radio stations with custom icons
 - Local files (`.mp3`, `.wav`, `.ogg`, `.flac`, `.mp2`, `.wax`, `.wma`,
   `.opus`, `.aiff`) or web streams as sources
-- Works in vehicles, on the pocket radio, and on physical in-world radios
+- Works in vehicles, on the pocket radio, and (opt-in) on physical
+  in-world radios
 - **Drop-in compatible** with existing radioExt station packs (schema v1)
 - **New metadata schema v2** with station groups and song titles
 - **Hot reload** — re-scan your stations without restarting the game
@@ -60,6 +61,25 @@ Existing radioExt packs work unchanged — either drop their folders into
 imports stations from `mods/radioExt/radios/` when a legacy install is
 present (configurable via `config.json`). You must not have both mods
 installed at the same time.
+
+## Configuration
+
+`config.json` at the mod root (all values optional, defaults shown):
+
+```json
+{
+    "importLegacyRadioExt": true,
+    "supportWorldRadios": false
+}
+```
+
+- `importLegacyRadioExt` — also load station folders from `mods/radioExt/radios/`.
+- `supportWorldRadios` — opt-in: lets physical in-world radios play
+  custom stations. Off by default so every in-world radio (including
+  quest radios) stays fully vanilla unless you enable this. Takes effect
+  after restarting the game. Even when enabled, quest radios never start
+  on a custom station on their own — custom stations are only reachable
+  by manually cycling through them.
 
 ## Hot reload
 
@@ -117,6 +137,10 @@ for most problems.
   what is wrong (missing/invalid `metadata.json`, disabled group, ...).
 - **A station shows up but plays nothing** — it has no song files and is
   not configured as a stream.
+- **A quest radio misbehaves** — make sure `"supportWorldRadios"` is
+  `false` in `config.json` (the default) and restart. This keeps every
+  in-world radio fully vanilla while vehicle and pocket radio stations
+  continue to work.
 
 ## Credits
 

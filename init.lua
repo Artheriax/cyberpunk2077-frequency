@@ -107,6 +107,7 @@ function FrequencyMod:initialize()
         vehicleManager = self.vehicleManager,
         worldManager = self.worldManager,
         modSettings = self.modSettings,
+        modConfig = self.modConfig,
     })
 
     self.trainSystem = nil
@@ -143,7 +144,15 @@ function FrequencyMod:OnInit()
     self.registry:LoadAll()
 
     self.vehicleObservers:Register()
-    self.worldObservers:Register()
+
+    -- World radio hooks touch every Radio entity in the game, including
+    -- quest-driven ones. They are hardened against quest interference
+    -- (see WorldObservers), but users can turn the feature off entirely.
+    if self.modConfig.supportWorldRadios then
+        self.worldObservers:Register()
+    else
+        self.logger:Info("World radio support is disabled in config.json; physical in-world radios stay vanilla.")
+    end
 
     self.session:OnSessionStart(function()
         -- session started; nothing to preload, stations simulate on their own

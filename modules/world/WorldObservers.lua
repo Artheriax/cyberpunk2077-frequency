@@ -99,24 +99,30 @@ function WorldObservers:HookStationCursor()
     end)
 end
 
---- Device setup: report the extended station count and pick a starting
---- station from the combined vanilla + custom range.
+--- Device setup: report the extended station count and keep the vanilla
+--- starting-station behavior intact. Quest scenes often set up a radio
+--- expecting a specific vanilla station, so a radio must never randomly
+--- start on a custom station; custom stations are only reachable by
+--- manually cycling through them.
 function WorldObservers:HookDeviceSetup()
     local registry = self.registry
 
-    Override("RadioControllerPS", "GameAttached", function(this)
+    -- Preserve the vanilla attach logic (it changes between patches) and
+    -- only widen the station range afterwards.
+    Override("RadioControllerPS", "GameAttached", function(this, wrapped)
+        wrapped()
         this.amountOfStations = CUSTOM_FIRST + registry:Count()
-        this.activeChannelName = RadioStationDataProvider.GetChannelName(this:GetActiveRadioStation())
-        this:TryInitializeInteractiveState()
     end)
 
-    Override("RadioControllerPS", "SetDefaultRadioStation", function(this)
+    Override("RadioControllerPS", "SetDefaultRadioStation", function(this, wrapped)
         if not this.radioSetup.randomizeStartingStation then
-            this.activeStation = this.radioSetup.startingStation
+            wrapped()
             return
         end
-        local upper = math.max(VANILLA_LAST + registry:Count(), VANILLA_LAST)
-        this.activeStation = math.random(0, upper)
+        -- Randomize inside the vanilla range only. Extending this range
+        -- would let quest radios boot into custom stations and replace
+        -- quest audio with unrelated music.
+        this.activeStation = math.random(0, VANILLA_LAST)
     end)
 end
 

@@ -1,3 +1,4 @@
 {
-    "importLegacyRadioExt": true
+    "importLegacyRadioExt": true,
+    "supportWorldRadios": false
 }

@@ -28,7 +28,7 @@ local Class = require("modules/core/Class")
 local ConsoleApi = Class.define("ConsoleApi")
 
 function ConsoleApi:initialize(context)
-    -- context: { logger, nativeBridge, registry, groupConfig, vehicleManager, worldManager, modSettings }
+    -- context: { logger, nativeBridge, registry, groupConfig, vehicleManager, worldManager, modSettings, modConfig }
     self.logger = context.logger
     self.nativeBridge = context.nativeBridge
     self.registry = context.registry
@@ -36,6 +36,7 @@ function ConsoleApi:initialize(context)
     self.vehicleManager = context.vehicleManager
     self.worldManager = context.worldManager
     self.modSettings = context.modSettings or nil
+    self.modConfig = context.modConfig or nil
 
     -- Markers used by NativeBridge to recover the native class after the
     -- global `Frequency` name is rebound to this API table.
@@ -60,6 +61,7 @@ function ConsoleApi:Status()
     local lines = {
         ("Stations loaded: %d"):format(self.registry:Count()),
         ("Legacy radioExt import: %s"):format(self.registry.legacyImportUsed and "yes" or "no"),
+        ("World radio support: %s"):format(self.modConfig and self.modConfig.supportWorldRadios and "on" or "off"),
         ("Vehicle radio: %s"):format(active and ("\"" .. active.station .. "\" - " .. active.trackName) or "off"),
     }
     for _, line in ipairs(lines) do
