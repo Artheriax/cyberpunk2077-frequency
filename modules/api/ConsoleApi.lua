@@ -28,13 +28,14 @@ local Class = require("modules/core/Class")
 local ConsoleApi = Class.define("ConsoleApi")
 
 function ConsoleApi:initialize(context)
-    -- context: { logger, nativeBridge, registry, groupConfig, vehicleManager, worldManager }
+    -- context: { logger, nativeBridge, registry, groupConfig, vehicleManager, worldManager, modSettings }
     self.logger = context.logger
     self.nativeBridge = context.nativeBridge
     self.registry = context.registry
     self.groupConfig = context.groupConfig
     self.vehicleManager = context.vehicleManager
     self.worldManager = context.worldManager
+    self.modSettings = context.modSettings or nil
 
     -- Markers used by NativeBridge to recover the native class after the
     -- global `Frequency` name is rebound to this API table.
@@ -121,6 +122,9 @@ end
 function ConsoleApi:Reload()
     self.worldManager:ReleaseAll()
     self.registry:Reload()
+    if self.modSettings then
+        self.modSettings:RefreshGroups()
+    end
     return self.registry:Count()
 end
 

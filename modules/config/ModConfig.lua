@@ -33,4 +33,12 @@ function ModConfig:Load()
     end
 end
 
+--- Persists the current settings back to config.json, keeping any unknown
+--- keys a user may have added.
+function ModConfig:Save()
+    local raw = self.files:ReadJson(ModConfig.FILE_PATH) or {}
+    raw.importLegacyRadioExt = self.importLegacyRadioExt and true or false
+    return self.files:WriteJson(ModConfig.FILE_PATH, raw)
+end
+
 return ModConfig

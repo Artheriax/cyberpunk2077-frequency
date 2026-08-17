@@ -91,6 +91,14 @@ function FrequencyMod:initialize()
         worldManager = self.worldManager,
     })
 
+    self.modSettings = ModSettings({
+        logger = self.logger,
+        registry = self.registry,
+        groupConfig = self.groupConfig,
+        modConfig = self.modConfig,
+        worldManager = self.worldManager,
+    })
+
     self.api = ConsoleApi({
         logger = self.logger,
         nativeBridge = self.nativeBridge,
@@ -98,11 +106,7 @@ function FrequencyMod:initialize()
         groupConfig = self.groupConfig,
         vehicleManager = self.vehicleManager,
         worldManager = self.worldManager,
-    })
-
-    self.modSettings = ModSettings({
-        logger = self.logger,
-        registry = self.registry,
+        modSettings = self.modSettings,
     })
 
     self.trainSystem = nil

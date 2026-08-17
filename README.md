@@ -21,8 +21,9 @@ station packs keep working out of the box (drop-in compatibility).
 - **Hot reload** — re-scan your stations without restarting the game
 - **Station groups** — enable or disable whole packs at once
 - **CET console API** for scripting and companion mods
-- **Native Settings UI** support — reload stations right from the game's
-  Mods settings menu (optional)
+- **Native Settings UI** support — reload stations, toggle station groups,
+  the legacy import and debug logging right from the game's Mods settings
+  menu (optional)
 
 ## Installation
 
@@ -71,10 +72,12 @@ Frequency.Reload()
 All stations are stopped, re-scanned from disk, and rebuilt — no restart
 required.
 
-Prefer a button? Install
+Prefer a menu? Install
 [Native Settings UI](https://www.nexusmods.com/cyberpunk2077/mods/3518)
-(optional): Frequency then adds a **Frequency** tab with a
-**Reload stations** button to the game's *Settings → Mods* menu.
+(optional): Frequency then adds a **Frequency** tab to the game's
+*Settings → Mods* menu with a **Reload stations** button, a **Station
+groups** section (toggle whole packs on/off), a **Import legacy radioExt
+stations** switch, and a **Debug logging** switch.
 
 ## Station groups
 

@@ -71,6 +71,15 @@ function GroupConfig:SetEnabled(name, enabled)
     self:Save()
 end
 
+--- Re-enables every known group (used by the settings menu's restore
+--- defaults action).
+function GroupConfig:EnableAll()
+    for _, data in pairs(self.groups) do
+        data.enabled = true
+    end
+    self:Save()
+end
+
 function GroupConfig:All()
     return self.groups
 end
