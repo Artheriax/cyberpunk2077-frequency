@@ -1,0 +1,1 @@
+python tools/package.py E:\Projects\cyberpunk2077-frequency\native\build\Release
