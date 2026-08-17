@@ -21,6 +21,8 @@ station packs keep working out of the box (drop-in compatibility).
 - **Hot reload** — re-scan your stations without restarting the game
 - **Station groups** — enable or disable whole packs at once
 - **CET console API** for scripting and companion mods
+- **Native Settings UI** support — reload stations right from the game's
+  Mods settings menu (optional)
 
 ## Installation
 
@@ -30,6 +32,9 @@ station packs keep working out of the box (drop-in compatibility).
    (the one containing `bin` and `r6`). This places:
    - `bin/x64/plugins/cyber_engine_tweaks/mods/Frequency/` — the CET side
    - `red4ext/plugins/Frequency/Frequency.dll` and `fmod.dll` — the native side
+
+Optional: [Native Settings UI](https://www.nexusmods.com/cyberpunk2077/mods/3518)
+adds a Frequency settings tab to the game's Mods menu.
 
 ## Creating a station
 
@@ -65,6 +70,11 @@ Frequency.Reload()
 
 All stations are stopped, re-scanned from disk, and rebuilt — no restart
 required.
+
+Prefer a button? Install
+[Native Settings UI](https://www.nexusmods.com/cyberpunk2077/mods/3518)
+(optional): Frequency then adds a **Frequency** tab with a
+**Reload stations** button to the game's *Settings → Mods* menu.
 
 ## Station groups
 

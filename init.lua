@@ -28,6 +28,7 @@ local AudioEngine = require("modules/audio/AudioEngine")
 local ModConfig = require("modules/config/ModConfig")
 local GroupConfig = require("modules/config/GroupConfig")
 local MetadataLoader = require("modules/config/MetadataLoader")
+local ModSettings = require("modules/config/ModSettings")
 
 local StationRegistry = require("modules/stations/StationRegistry")
 local VehicleRadioManager = require("modules/vehicle/VehicleRadioManager")
@@ -99,6 +100,11 @@ function FrequencyMod:initialize()
         worldManager = self.worldManager,
     })
 
+    self.modSettings = ModSettings({
+        logger = self.logger,
+        registry = self.registry,
+    })
+
     self.trainSystem = nil
 end
 
@@ -147,6 +153,9 @@ function FrequencyMod:OnInit()
     self.trainSystem = GetMod("trainSystem")
     self.session:RegisterHooks()
     self.session:Refresh() -- in case CET reloaded all mods mid-session
+
+    -- Optional Native Settings UI tab (no-op when the mod is missing).
+    self.modSettings:Register()
 
     -- Companion mods reach the API through GetMod("Frequency"), which CET
     -- serves from this chunk's return value. The sandboxed environment does
