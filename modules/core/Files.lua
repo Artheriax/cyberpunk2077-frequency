@@ -66,7 +66,7 @@ end
 --- Lists the subfolders of a directory, resolved relative to the game
 --- executable directory by the native plugin. Returns a sorted array.
 function Files:ListSubfolders(relativePath)
-    local folders = self.native.GetFolders(relativePath)
+    local folders = self.native:Get().GetFolders(relativePath)
     if not folders then
         return {}
     end
