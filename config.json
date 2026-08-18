@@ -1,4 +1,5 @@
 {
     "importLegacyRadioExt": true,
-    "supportWorldRadios": false
+    "supportWorldRadios": false,
+    "audioGain": 0.4
 }

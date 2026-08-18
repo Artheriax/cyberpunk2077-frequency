@@ -9,6 +9,13 @@
     volume) and falls back to name-based Play/Stop when the handle API is
     not reachable from CET.
 
+    Volume model:
+      - Audioware manifest `settings.volume` is in DECIBELS; the baked
+        manifest value covers stations for the name-based fallback path.
+      - Runtime `DynamicSoundEvent.SetVolume` takes a LINEAR amplitude
+        (0..1); the handle path applies baseGain * radioport wheel there,
+        which also makes gain changes apply without a restart.
+
     Channel convention:
       -1        -> the vehicle / pocket radio (2D playback)
        1..N     -> reserved for physical world radios (emitters, not yet
@@ -29,7 +36,12 @@ function AudioEngine:initialize(nativeBridge, logger)
     self.logger = logger
     self.audioSystem = nil
     self.handlesUnavailable = false
-    self.currentSound = {} -- channel -> { id, handle, appliedWheel }
+    self.globalGain = 0.4
+    self.currentSound = {} -- channel -> { id, handle, baseGain, applied }
+end
+
+function AudioEngine:SetGlobalGain(gain)
+    self.globalGain = tonumber(gain) or 0.4
 end
 
 --- Lazily resolves the game's audio system. CET exposes it as a zero
@@ -72,8 +84,7 @@ end
 --- @param manifestPath string depot-relative path of the song
 ---        ("radios\\<station>\\<file>" or "legacy\\<station>\\<file>")
 --- @param startPosMs number desired join position in milliseconds
---- @param volume number station volume multiplier (baked into the
----        manifest at generation time; only kept for reference here)
+--- @param volume number station volume multiplier
 --- @param fade number unused (the game handles fades)
 --- @param force boolean|nil unused
 function AudioEngine:Play(channel, manifestPath, startPosMs, volume, fade, force)
@@ -84,6 +95,7 @@ function AudioEngine:Play(channel, manifestPath, startPosMs, volume, fade, force
     end
 
     local soundId = SoundId.FromPath(manifestPath)
+    local baseGain = (tonumber(volume) or 1.0) * self.globalGain
     self:Stop(channel)
 
     local handle = self:CreateSoundEvent(soundId)
@@ -92,12 +104,17 @@ function AudioEngine:Play(channel, manifestPath, startPosMs, volume, fade, force
             GetPlayer():QueueEvent(handle)
         end)
         if ok then
-            self.currentSound[channel] = { id = soundId, handle = handle, appliedWheel = nil }
+            self.currentSound[channel] = { id = soundId, handle = handle, baseGain = baseGain, applied = nil }
+
             if startPosMs and startPosMs > 0 then
                 pcall(function()
                     handle:SeekTo(startPosMs / 1000)
                 end)
             end
+
+            -- Apply the base gain immediately; the radioport wheel is
+            -- polled on top of it every frame.
+            self:SetVolume(channel, baseGain)
             return true
         end
 
@@ -143,40 +160,50 @@ function AudioEngine:Stop(channel)
     end
 end
 
---- Sets the per-play volume multiplier of the active handle. Used for the
---- radioport volume wheel; station volume is baked into the manifest.
+--- Sets the per-play volume of the active handle (linear amplitude 0..1).
+--- Used for the station/gain product and the radioport volume wheel.
 function AudioEngine:SetVolume(channel, volume)
     local entry = self.currentSound[channel]
     if entry == nil or entry.handle == nil then
         return
     end
+    local clamped = math.max(tonumber(volume) or 1.0, 0.0)
     pcall(function()
-        entry.handle:SetVolume(volume)
+        entry.handle:SetVolume(clamped)
     end)
 end
 
---- Polls the pocket radio's own volume wheel and applies it to the active
---- vehicle-channel handle. No-op when the wheel value is not readable.
+--- Mirrors the context-dependent radio volume settings var on top of the
+--- station/gain base. The in-radioport volume wheel writes the settings
+--- vars: CarRadioVolume while mounted (already applied by the Audioware
+--- car_radio track) and RadioportVolume on foot (applied here).
 function AudioEngine:UpdateVehicleVolume()
     local entry = self.currentSound[AudioEngine.VEHICLE_CHANNEL]
     if entry == nil or entry.handle == nil then
         return
     end
 
-    local ok, wheel = pcall(function()
+    local ok, mounted, slider = pcall(function()
         local player = GetPlayer()
-        local pocket = player and player:GetPocketRadio()
-        return pocket and pocket.volume
+        local isMounted = player ~= nil and player:GetMountedVehicle() ~= nil
+        local varName = isMounted and "CarRadioVolume" or "RadioportVolume"
+        local value = Game.GetSettingsSystem():GetVar("/audio/volume", varName):GetValue()
+        return isMounted, value
     end)
-    if not ok or type(wheel) ~= "number" then
+    if not ok or type(slider) ~= "number" then
         return
     end
-    if wheel > 1 then
-        wheel = wheel / 100
+
+    local target
+    if mounted then
+        target = entry.baseGain
+    else
+        target = entry.baseGain * math.max(slider / 100, 0.01)
     end
-    if entry.appliedWheel ~= wheel then
-        entry.appliedWheel = wheel
-        self:SetVolume(AudioEngine.VEHICLE_CHANNEL, math.max(wheel, 0.01))
+
+    if entry.applied ~= target then
+        entry.applied = target
+        self:SetVolume(AudioEngine.VEHICLE_CHANNEL, target)
     end
 end
 

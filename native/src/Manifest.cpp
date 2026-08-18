@@ -89,7 +89,7 @@ void AppendStationSongs(const std::filesystem::path& aStationDir, const std::str
         aYaml += "    file: " + YamlQuote(relative) + "\n";
         aYaml += "    captions: []\n";
         aYaml += "    settings:\n";
-        aYaml += "      volume: 0.4\n"; // global gain, mirrors Manifest.lua GLOBAL_GAIN
+        aYaml += "      volume: -7.96\n"; // 20*log10(0.4), mirrors the default audioGain
     }
 }
 

@@ -26,12 +26,13 @@ local TAB = "/frequency"
 local GROUPS_SUB = TAB .. "/groups"
 
 function ModSettings:initialize(context)
-    -- context: { logger, registry, groupConfig, modConfig, worldManager }
+    -- context: { logger, registry, groupConfig, modConfig, worldManager, audio }
     self.logger = context.logger
     self.registry = context.registry
     self.groupConfig = context.groupConfig
     self.modConfig = context.modConfig
     self.worldManager = context.worldManager
+    self.audio = context.audio
     self.ns = nil
 end
 
@@ -152,6 +153,23 @@ function ModSettings:Register()
             end
         )
 
+        ns.addRangeFloat(
+            TAB,
+            "Station volume",
+            "Global loudness of custom stations. Applies immediately while a station plays (lower values = quieter).",
+            0.05,
+            1.0,
+            0.05,
+            "%.2f",
+            self.modConfig.audioGain,
+            0.4,
+            function(value)
+                self.modConfig.audioGain = value
+                self.modConfig:Save()
+                self.audio:SetGlobalGain(value)
+            end
+        )
+
         self:RefreshGroups()
 
         -- Override the vanilla "Restore defaults" action for this tab.
@@ -159,8 +177,10 @@ function ModSettings:Register()
             self.groupConfig:EnableAll()
             self.modConfig.importLegacyRadioExt = true
             self.modConfig.supportWorldRadios = false
+            self.modConfig.audioGain = 0.4
             self.modConfig:Save()
             self.logger:SetDebug(false)
+            self.audio:SetGlobalGain(0.4)
             self:Reload()
         end)
     end)

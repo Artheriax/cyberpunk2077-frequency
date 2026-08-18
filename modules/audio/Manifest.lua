@@ -20,10 +20,10 @@ local Manifest = Class.define("Manifest")
 -- Native paths are bin/x64-relative; this reaches the game root.
 Manifest.PATH = "..\\..\\r6\\audioware\\Frequency\\audios.yml"
 
--- Global attenuation baked into every song. The game's radio tracks apply
--- the volume sliders on top; this keeps custom stations in line with
--- vanilla station loudness (tune if needed).
-local GLOBAL_GAIN = 0.4
+local function amplitudeToDb(amplitude)
+    local a = math.max(amplitude, 0.0001)
+    return math.max(20 * math.log10(a), -60)
+end
 
 local function quoteYaml(text)
     return "\"" .. tostring(text):gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\""
@@ -36,14 +36,16 @@ function Manifest:initialize(context)
 end
 
 --- Rewrites the manifest from the given station list. Depot-relative song
---- paths use forward slashes (Audioware convention).
-function Manifest:Generate(stations)
+--- paths use forward slashes (Audioware convention). `gain` is the global
+--- loudness multiplier from config.json. Manifest volumes are in DECIBELS.
+function Manifest:Generate(stations, gain)
     local lines = { "version: 1.0.0", "jingles:" }
     local seen = {}
     local count = 0
 
     for _, station in ipairs(stations) do
-        local volume = (tonumber(station:GetVolume()) or 1.0) * GLOBAL_GAIN
+        local volume = (tonumber(station:GetVolume()) or 1.0) * (tonumber(gain) or 0.4)
+        local volumeDb = amplitudeToDb(volume)
         for _, song in ipairs(station.songs) do
             local relative = station.manifestFolder .. "/" .. song.path:gsub("\\", "/")
             local id = SoundId.FromPath(relative)
@@ -53,7 +55,7 @@ function Manifest:Generate(stations)
                 table.insert(lines, "    file: " .. quoteYaml(relative))
                 table.insert(lines, "    captions: []")
                 table.insert(lines, "    settings:")
-                table.insert(lines, ("      volume: %s"):format(tostring(volume)))
+                table.insert(lines, ("      volume: %.2f"):format(volumeDb))
                 count = count + 1
             end
         end

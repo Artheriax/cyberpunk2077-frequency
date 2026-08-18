@@ -173,7 +173,7 @@ end
 --- are correct on the next game launch.
 function StationRegistry:WriteAudioManifest()
     local Manifest = require("modules/audio/Manifest")
-    Manifest({ files = self.files, logger = self.logger }):Generate(self.stations)
+    Manifest({ files = self.files, logger = self.logger }):Generate(self.stations, self.modConfig.audioGain)
 end
 
 function StationRegistry:SortByIndex()

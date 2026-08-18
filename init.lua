@@ -96,6 +96,7 @@ function FrequencyMod:initialize()
         groupConfig = self.groupConfig,
         modConfig = self.modConfig,
         worldManager = self.worldManager,
+        audio = self.audio,
     })
 
     self.api = ConsoleApi({
@@ -139,6 +140,9 @@ function FrequencyMod:OnInit()
 
     self.modConfig:Load()
     self.groupConfig:Load()
+
+    -- The global loudness multiplier applies at runtime via sound handles.
+    self.audio:SetGlobalGain(self.modConfig.audioGain)
 
     self.registry:LoadAll()
 
