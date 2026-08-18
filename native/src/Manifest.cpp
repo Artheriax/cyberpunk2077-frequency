@@ -89,7 +89,7 @@ void AppendStationSongs(const std::filesystem::path& aStationDir, const std::str
         aYaml += "    file: " + YamlQuote(relative) + "\n";
         aYaml += "    captions: []\n";
         aYaml += "    settings:\n";
-        aYaml += "      volume: 1.0\n";
+        aYaml += "      volume: 0.4\n"; // global gain, mirrors Manifest.lua GLOBAL_GAIN
     }
 }
 

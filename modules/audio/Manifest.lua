@@ -20,6 +20,11 @@ local Manifest = Class.define("Manifest")
 -- Native paths are bin/x64-relative; this reaches the game root.
 Manifest.PATH = "..\\..\\r6\\audioware\\Frequency\\audios.yml"
 
+-- Global attenuation baked into every song. The game's radio tracks apply
+-- the volume sliders on top; this keeps custom stations in line with
+-- vanilla station loudness (tune if needed).
+local GLOBAL_GAIN = 0.4
+
 local function quoteYaml(text)
     return "\"" .. tostring(text):gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\""
 end
@@ -38,7 +43,7 @@ function Manifest:Generate(stations)
     local count = 0
 
     for _, station in ipairs(stations) do
-        local volume = tonumber(station:GetVolume()) or 1.0
+        local volume = (tonumber(station:GetVolume()) or 1.0) * GLOBAL_GAIN
         for _, song in ipairs(station.songs) do
             local relative = station.manifestFolder .. "/" .. song.path:gsub("\\", "/")
             local id = SoundId.FromPath(relative)

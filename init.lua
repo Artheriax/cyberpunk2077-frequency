@@ -68,6 +68,7 @@ function FrequencyMod:initialize()
         scheduler = self.scheduler,
         registry = self.registry,
         session = self.session,
+        audio = self.audio,
     })
 
     self.worldManager = WorldRadioManager({
@@ -187,7 +188,10 @@ function FrequencyMod:OnUpdate(deltaTime)
         return
     end
 
-    if self.session:IsInGame() and not self.session:ShouldMuteAudio() then
+    -- The game's audio engine mutes/ducks custom sounds itself (menus,
+    -- braindances, loading screens), so playback is left running through
+    -- those states and only stopped outside a session entirely.
+    if self.session:IsInGame() then
         self.scheduler:Update(deltaTime)
         self.vehicleManager:Update()
         self.worldManager:Update()

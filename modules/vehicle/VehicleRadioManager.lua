@@ -13,11 +13,12 @@ local Class = require("modules/core/Class")
 local VehicleRadioManager = Class.define("VehicleRadioManager")
 
 function VehicleRadioManager:initialize(context)
-    -- context: { logger, scheduler, registry, session }
+    -- context: { logger, scheduler, registry, session, audio }
     self.logger = context.logger
     self.scheduler = context.scheduler
     self.registry = context.registry
     self.session = context.session
+    self.audio = context.audio
 
     self.mutedInMenu = false
 end
@@ -71,6 +72,7 @@ function VehicleRadioManager:Update()
     local vehicle = GetMountedVehicle(player)
     if vehicle then
         if not vehicle:IsEngineTurnedOn() then
+            self.audio:UpdateVehicleVolume()
             return
         end
 
@@ -85,12 +87,16 @@ function VehicleRadioManager:Update()
             player:GetQuickSlotsManager():SendRadioEvent(true, true, station:GetIndex())
             self.logger:Debug("Vehicle radio was supposed to be playing but was not - restarted it.")
         end
+
+        self.audio:UpdateVehicleVolume()
     elseif player:GetPocketRadio().isOn then
         local station = self.registry:GetByIndex(player:GetPocketRadio().station)
         if station and not station:IsActiveOn(-1) then
             player:GetQuickSlotsManager():SendRadioEvent(true, true, station:GetIndex())
             self.logger:Debug("Pocket radio was supposed to be playing but was not - restarted it.")
         end
+
+        self.audio:UpdateVehicleVolume()
     end
 end
 

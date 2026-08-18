@@ -297,7 +297,8 @@ function Station:StopAllChannels()
 end
 
 function Station:UpdateVolume(channel)
-    self.audio:SetVolume(channel, self:GetVolume())
+    -- The game applies the volume sliders itself; per-play volume (the
+    -- radioport wheel) is handled by the audio engine directly.
 end
 
 function Station:RefreshRadioUi()
