@@ -131,6 +131,18 @@ function ModSettings:Register()
 
         ns.addSwitch(
             TAB,
+            "World radio support",
+            "Opt-in: let physical in-world radios play custom stations. Off by default so quest radios stay fully vanilla. Takes effect after restarting the game.",
+            self.modConfig.supportWorldRadios,
+            false,
+            function(state)
+                self.modConfig.supportWorldRadios = state
+                self.modConfig:Save()
+            end
+        )
+
+        ns.addSwitch(
+            TAB,
             "Debug logging",
             "Prints verbose [Frequency] Debug: messages to the CET console.",
             self.logger:IsDebugEnabled(),
@@ -146,6 +158,7 @@ function ModSettings:Register()
         ns.registerRestoreDefaultsCallback(TAB, true, function()
             self.groupConfig:EnableAll()
             self.modConfig.importLegacyRadioExt = true
+            self.modConfig.supportWorldRadios = false
             self.modConfig:Save()
             self.logger:SetDebug(false)
             self:Reload()

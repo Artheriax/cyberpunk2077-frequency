@@ -5,7 +5,11 @@
     sane default, the file is optional.
 
     {
-        "importLegacyRadioExt": true   // also load stations from mods/radioExt/radios
+        "importLegacyRadioExt": true,  // also load stations from mods/radioExt/radios
+        "supportWorldRadios": false    // opt-in: let physical in-world radios
+                                       // play custom stations; off by default
+                                       // to keep quest radios fully vanilla
+                                       // (needs a restart)
     }
 
     Written from scratch for Frequency.
@@ -21,6 +25,7 @@ function ModConfig:initialize(files, logger)
     self.files = files
     self.logger = logger
     self.importLegacyRadioExt = true
+    self.supportWorldRadios = false
 end
 
 function ModConfig:Load()
@@ -31,6 +36,9 @@ function ModConfig:Load()
     if type(raw.importLegacyRadioExt) == "boolean" then
         self.importLegacyRadioExt = raw.importLegacyRadioExt
     end
+    if type(raw.supportWorldRadios) == "boolean" then
+        self.supportWorldRadios = raw.supportWorldRadios
+    end
 end
 
 --- Persists the current settings back to config.json, keeping any unknown
@@ -38,6 +46,7 @@ end
 function ModConfig:Save()
     local raw = self.files:ReadJson(ModConfig.FILE_PATH) or {}
     raw.importLegacyRadioExt = self.importLegacyRadioExt and true or false
+    raw.supportWorldRadios = self.supportWorldRadios and true or false
     return self.files:WriteJson(ModConfig.FILE_PATH, raw)
 end
 

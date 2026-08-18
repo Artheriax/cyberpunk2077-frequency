@@ -30,6 +30,10 @@ end
 function AudioEngine:ComputeVolume(channel, stationVolume)
     local volume = tonumber(stationVolume) or 1.0
 
+    -- The game's Wwise mix applies master volume on top of the radio
+    -- sliders; our separate FMOD system must mirror both manually.
+    volume = volume * (self.settings:GetMasterVolume() / 100)
+
     if channel == AudioEngine.VEHICLE_CHANNEL then
         volume = volume * (self.settings:GetContextVolume() / 100)
     else
