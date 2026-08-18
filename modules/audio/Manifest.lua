@@ -24,9 +24,10 @@ local function quoteYaml(text)
     return "\"" .. tostring(text):gsub("\\", "\\\\"):gsub("\"", "\\\"") .. "\""
 end
 
-function Manifest:initialize(files, logger)
-    self.files = files
-    self.logger = logger
+function Manifest:initialize(context)
+    -- context: { files, logger }
+    self.files = context.files
+    self.logger = context.logger
 end
 
 --- Rewrites the manifest from the given station list. Depot-relative song
