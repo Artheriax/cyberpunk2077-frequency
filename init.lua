@@ -20,7 +20,6 @@ local Logger = require("modules/core/Logger")
 local Scheduler = require("modules/core/Scheduler")
 local Session = require("modules/core/Session")
 local Files = require("modules/core/Files")
-local GameAudioSettings = require("modules/core/GameAudioSettings")
 
 local NativeBridge = require("modules/audio/NativeBridge")
 local AudioEngine = require("modules/audio/AudioEngine")
@@ -48,8 +47,7 @@ function FrequencyMod:initialize()
     self.session = Session()
     self.nativeBridge = NativeBridge(self.logger)
     self.files = Files(self.nativeBridge, self.logger)
-    self.audioSettings = GameAudioSettings()
-    self.audio = AudioEngine(self.nativeBridge, self.audioSettings, self.logger)
+    self.audio = AudioEngine(self.nativeBridge, self.logger)
 
     self.modConfig = ModConfig(self.files, self.logger)
     self.groupConfig = GroupConfig(self.files, self.logger)
@@ -145,13 +143,10 @@ function FrequencyMod:OnInit()
 
     self.vehicleObservers:Register()
 
-    -- World radio hooks touch every Radio entity in the game, including
-    -- quest-driven ones. They are hardened against quest interference
-    -- (see WorldObservers), but users can turn the feature off entirely.
+    -- World radio support is not ported to the Audioware backend yet;
+    -- in-world radios stay fully vanilla in this build.
     if self.modConfig.supportWorldRadios then
-        self.worldObservers:Register()
-    else
-        self.logger:Info("World radio support is disabled in config.json; physical in-world radios stay vanilla.")
+        self.logger:Warn("World radio support is not available in this build yet; in-world radios stay vanilla.")
     end
 
     self.session:OnSessionStart(function()

@@ -9,7 +9,6 @@
 ]]
 
 local Class = require("modules/core/Class")
-local ModPaths = require("modules/core/ModPaths")
 
 local Station = Class.define("Station")
 
@@ -26,6 +25,7 @@ function Station:initialize(context)
 
     self.id = nil             -- folder name, unique
     self.source = "own"       -- "own" | "legacy" (imported from radioExt)
+    self.manifestFolder = "radios" -- "radios" | "legacy" inside the Audioware depot
     self.config = nil         -- normalized metadata (see MetadataLoader)
     self.songs = {}           -- array of { path, length } (length in seconds)
     self.orderedSongs = {}
@@ -79,6 +79,7 @@ function Station:Load(config, songs, stationId, position, source)
     self.config = config
     self.id = stationId
     self.source = source or "own"
+    self.manifestFolder = (self.source == "legacy") and "legacy" or "radios"
     self.index = Station.VANILLA_STATION_COUNT + position
 
     for _, song in ipairs(songs) do
@@ -94,11 +95,8 @@ function Station:Load(config, songs, stationId, position, source)
         self.channels[channel] = false
     end
 
-    if self:IsStream() then
-        self.currentSong = { path = self:GetName(), length = 0 }
-        self.logger:Infof("Station \"%s\" is a web stream (%s).", self:GetName(), self:GetStreamUrl())
-    elseif #self.songs == 0 then
-        self.logger:Warnf("Station \"%s\" has no song files and is not a stream; it will show up but stay silent.", self:GetName())
+    if #self.songs == 0 then
+        self.logger:Warnf("Station \"%s\" has no song files; it will show up but stay silent.", self:GetName())
         self.currentSong = { path = "silent", length = 999999 }
     else
         self:StartSimulation()
@@ -259,19 +257,13 @@ end
 -- ---------------------------------------------------------------------------
 
 function Station:ResolveSongPath()
-    if self.source == "legacy" then
-        return ModPaths.NativeRelativeLegacy(ModPaths.RadiosFolder .. "\\" .. self.currentSong.path)
-    end
-    return ModPaths.NativeRelative(ModPaths.RadiosFolder .. "\\" .. self.currentSong.path)
+    -- Depot-relative path inside the Audioware depot folder.
+    return self.manifestFolder .. "\\" .. self.currentSong.path
 end
 
 function Station:PlayCurrentOn(channel)
-    if self:IsStream() then
-        self.logger:Debugf("Playing stream \"%s\" on channel %d.", self:GetName(), channel)
-        self.audio:Play(channel, self:GetStreamUrl(), -1, self:GetVolume())
-    else
-        self.audio:Play(channel, self:ResolveSongPath(), self.elapsed * 1000, self:GetVolume())
-    end
+    self.logger:Debugf("Playing \"%s\" on channel %d.", tostring(self.currentSong and self.currentSong.path), channel)
+    self.audio:Play(channel, self:ResolveSongPath(), self.elapsed * 1000, self:GetVolume())
 end
 
 function Station:Activate(channel, updateUi)

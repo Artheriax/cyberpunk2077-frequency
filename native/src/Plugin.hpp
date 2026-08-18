@@ -3,16 +3,12 @@
 
 #include <RED4ext/RED4ext.hpp>
 #include <filesystem>
-#include <memory>
 
 namespace Frequency
 {
 
-class AudioEngine;
-class ChannelBank;
-
-/// Central plugin object: owns the RED4ext handles, the game executable
-/// path, and the two audio subsystems. Lives for the whole plugin lifetime.
+/// Central plugin object: owns the RED4ext handles and the game executable
+/// path. Lives for the whole plugin lifetime.
 class Plugin
 {
 public:
@@ -28,9 +24,6 @@ public:
     RED4ext::v1::PluginHandle Handle() const { return m_handle; }
     const std::filesystem::path& ExeDirectory() const { return m_exeDir; }
 
-    AudioEngine& Engine() { return *m_engine; }
-    ChannelBank& Channels() { return *m_channels; }
-
     void LogInfo(const char* aMessage) const;
     void LogError(const char* aMessage) const;
 
@@ -45,9 +38,6 @@ private:
     const RED4ext::v1::Sdk* m_sdk = nullptr;
     RED4ext::v1::PluginHandle m_handle = nullptr;
     std::filesystem::path m_exeDir;
-
-    std::unique_ptr<AudioEngine> m_engine;
-    std::unique_ptr<ChannelBank> m_channels;
 };
 
 } // namespace Frequency

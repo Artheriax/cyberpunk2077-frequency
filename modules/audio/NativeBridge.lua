@@ -13,7 +13,7 @@ local Class = require("modules/core/Class")
 
 local NativeBridge = Class.define("NativeBridge")
 
-NativeBridge.MIN_NATIVE_VERSION = "1.1.0"
+NativeBridge.MIN_NATIVE_VERSION = "2.0.0"
 
 function NativeBridge:initialize(logger)
     self.logger = logger
@@ -72,7 +72,7 @@ end
 function NativeBridge:Validate()
     local native = self:Get()
     if native == nil then
-        self.logger:Error("Native plugin missing. Make sure Frequency.dll and fmod.dll are installed in red4ext/plugins/Frequency.")
+        self.logger:Error("Native plugin missing. Make sure Frequency.dll is installed in red4ext/plugins/Frequency.")
         return false
     end
 

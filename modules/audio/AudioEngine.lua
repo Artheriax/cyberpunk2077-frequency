@@ -1,105 +1,130 @@
 --[[
     Frequency - AudioEngine.lua
 
-    Lua-side audio facade. Translates logical channels into native calls,
-    applies the game's volume sliders, and rate-limits play requests per
-    channel so the native side never gets spammed while a stream is loading.
+    Audioware playback facade. All station audio plays through the game's
+    own audio system (Audioware-registered sounds), so the game applies
+    volume sliders, ducking, and muting itself. This module translates
+    logical channels into manifest sound ids and tracks what plays where.
 
     Channel convention:
       -1        -> the vehicle / pocket radio (2D playback)
-       1..N     -> physical radios placed in the world (3D playback)
+       1..N     -> reserved for physical world radios (emitters, not yet
+                   ported in this branch)
 
     Written from scratch for Frequency.
 ]]
 
 local Class = require("modules/core/Class")
+local SoundId = require("modules/audio/SoundId")
 
 local AudioEngine = Class.define("AudioEngine")
 
 AudioEngine.VEHICLE_CHANNEL = -1
 
-local PLAY_COOLDOWN = 1.0 -- seconds, per channel
-
-function AudioEngine:initialize(nativeBridge, settings, logger)
+function AudioEngine:initialize(nativeBridge, logger)
     self.native = nativeBridge
-    self.settings = settings
     self.logger = logger
-    self.lastPlayAt = {}
+    self.audioSystem = nil
+    self.currentSound = {} -- channel -> manifest sound id
 end
 
-function AudioEngine:ComputeVolume(channel, stationVolume)
-    local volume = tonumber(stationVolume) or 1.0
-
-    -- The game's Wwise mix applies master volume on top of the radio
-    -- sliders; our separate FMOD system must mirror both manually.
-    volume = volume * (self.settings:GetMasterVolume() / 100)
-
-    if channel == AudioEngine.VEHICLE_CHANNEL then
-        volume = volume * (self.settings:GetContextVolume() / 100)
-    else
-        volume = volume * 0.7
+--- Lazily resolves the game's audio system. CET exposes it as a zero
+--- parameter static (the GameInstance is supplied by CET itself).
+function AudioEngine:GetAudioSystem()
+    if self.audioSystem == nil then
+        local ok, system = pcall(Game.GetAudioSystem)
+        if ok and system ~= nil then
+            self.audioSystem = system
+        end
     end
-
-    return volume * 0.4
+    return self.audioSystem
 end
 
 --- Starts playback on a channel.
 --- @param channel number logical channel id
---- @param path string file path (relative to bin/x64) or stream URL
---- @param startPosMs number start offset in milliseconds, or -1 for streams
---- @param stationVolume number station volume multiplier
---- @param fade number fade-in duration in seconds
---- @param force boolean|nil bypass the per-channel cooldown
-function AudioEngine:Play(channel, path, startPosMs, stationVolume, fade, force)
-    local now = os.clock()
-    local last = self.lastPlayAt[channel] or 0
-    if not force and (now - last) < PLAY_COOLDOWN then
+--- @param manifestPath string depot-relative path of the song
+---        ("radios\\<station>\\<file>" or "legacy\\<station>\\<file>")
+--- @param startPosMs number desired join position; not supported by the
+---        base Audioware API yet, songs start from the beginning
+--- @param volume number station volume multiplier (baked into the
+---        manifest at generation time)
+--- @param fade number unused (the game handles fades)
+--- @param force boolean|nil unused
+function AudioEngine:Play(channel, manifestPath, startPosMs, volume, fade, force)
+    local system = self:GetAudioSystem()
+    if system == nil then
+        self.logger:Warnf("Audio system unavailable; cannot play \"%s\".", tostring(manifestPath))
         return false
     end
-    self.lastPlayAt[channel] = now
 
-    self.native:Get().Play(channel, path, math.floor(startPosMs), self:ComputeVolume(channel, stationVolume), fade or 0.75)
+    local soundId = SoundId.FromPath(manifestPath)
+    local ok, err = pcall(function()
+        system:Play(CName.new(soundId))
+    end)
+    if not ok then
+        self.logger:Warnf("Failed to play \"%s\": %s", soundId, tostring(err))
+        return false
+    end
+
+    self.currentSound[channel] = soundId
+    if startPosMs and startPosMs > 0 then
+        self.logger:Debugf("Mid-song join (%d ms) not supported yet; \"%s\" starts from the beginning.",
+            startPosMs, soundId)
+    end
     return true
 end
 
 function AudioEngine:Stop(channel)
-    self.lastPlayAt[channel] = 0
-    self.native:Get().Stop(channel)
+    local soundId = self.currentSound[channel]
+    if soundId == nil then
+        return
+    end
+
+    local system = self:GetAudioSystem()
+    if system ~= nil then
+        pcall(function()
+            system:Stop(CName.new(soundId))
+        end)
+    end
+    self.currentSound[channel] = nil
 end
 
-function AudioEngine:SetVolume(channel, stationVolume)
-    self.native:Get().SetVolume(channel, self:ComputeVolume(channel, stationVolume))
+--- The game applies volume itself (Audioware tracks the sliders).
+function AudioEngine:SetVolume(_, _)
 end
 
-function AudioEngine:SetListener(pos, forward, up)
-    self.native:Get().SetListener(pos, forward, up)
+--- World-radio spatialization: handled by Audioware emitters (future).
+function AudioEngine:SetListener(_, _, _)
 end
 
-function AudioEngine:SetChannelPosition(channel, pos)
-    self.native:Get().SetChannelPos(channel, pos)
+function AudioEngine:SetChannelPosition(_, _)
 end
 
 function AudioEngine:IsChannelActive(channel)
-    local native = self.native:Get()
-    if native.IsChannelActive then
-        local ok, active = pcall(native.IsChannelActive, channel)
-        if ok then
-            return active == true
-        end
-    end
-    return false
+    return self.currentSound[channel] ~= nil
 end
 
+--- Song length probing for the station simulation (header parsing in the
+--- native plugin).
 function AudioEngine:GetSongLengthMs(absoluteModRelativePath)
-    return self.native:Get().GetSongLength(absoluteModRelativePath)
+    local native = self.native:Get()
+    if native == nil then
+        return 0
+    end
+    local ok, length = pcall(native.ProbeDuration, absoluteModRelativePath)
+    if ok and type(length) == "number" then
+        return length
+    end
+    return 0
 end
 
+--- Physical world radios are not implemented in this branch.
 function AudioEngine:GetChannelCount()
-    return self.native:Get().GetNumChannels()
+    return 0
 end
 
 function AudioEngine:Update(_)
-    -- Reserved for future per-frame work (native side polls FMOD itself).
+    -- The game's audio engine needs no per-frame pumping from us.
 end
 
 return AudioEngine

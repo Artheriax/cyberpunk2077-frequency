@@ -5,8 +5,7 @@ Usage:
     python tools/package.py <build_output_dir>
 
 <build_output_dir> is the directory containing the compiled Frequency.dll
-(e.g. native/build/Release). fmod.dll is expected next to it (the CMake
-build copies it there automatically).
+(e.g. native/build/Release).
 """
 
 from __future__ import annotations
@@ -37,12 +36,10 @@ def main() -> int:
 
     build_dir = Path(sys.argv[1])
     dll = build_dir / "Frequency.dll"
-    fmod = build_dir / "fmod.dll"
 
-    for required in (dll, fmod):
-        if not required.is_file():
-            print(f"error: {required} not found")
-            return 1
+    if not dll.is_file():
+        print(f"error: {dll} not found")
+        return 1
 
     out_zip = REPO_ROOT / "Frequency-release.zip"
     if out_zip.exists():
@@ -62,7 +59,6 @@ def main() -> int:
                     zf.write(path, f"{cet_root}/{rel}")
 
         zf.write(dll, f"{native_root}/Frequency.dll")
-        zf.write(fmod, f"{native_root}/fmod.dll")
 
     print(f"wrote {out_zip}")
     return 0

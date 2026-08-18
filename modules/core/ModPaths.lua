@@ -6,7 +6,9 @@
 
     Layout inside the game directory:
       bin/x64/plugins/cyber_engine_tweaks/mods/Frequency/   <- CET side
-      red4ext/plugins/Frequency/Frequency.dll + fmod.dll    <- native side
+      red4ext/plugins/Frequency/Frequency.dll               <- native side
+      r6/audioware/Frequency/                               <- Audioware depot
+                                                               (generated)
 
     Written from scratch for Frequency.
 ]]

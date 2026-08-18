@@ -17,7 +17,7 @@ private:
     static void PostRegisterTypes();
 
     static void RegisterInfoFunctions();
-    static void RegisterAudioFunctions();
+    static void RegisterIoFunctions();
 };
 
 } // namespace Frequency

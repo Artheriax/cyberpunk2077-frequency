@@ -1,7 +1,7 @@
 #include "Plugin.hpp"
 
-#include "Audio/AudioEngine.hpp"
-#include "Audio/ChannelBank.hpp"
+#include "Junction.hpp"
+#include "Manifest.hpp"
 #include "Scripting/NativeBindings.hpp"
 
 namespace Frequency
@@ -26,14 +26,10 @@ bool Plugin::OnLoad(const RED4ext::v1::Sdk* aSdk, RED4ext::v1::PluginHandle aHan
     m_handle = aHandle;
     m_exeDir = DetectExeDirectory();
 
-    m_engine = std::make_unique<AudioEngine>();
-    if (!m_engine->Initialize())
-    {
-        LogError("Failed to initialize the audio engine.");
-        return false;
-    }
-
-    m_channels = std::make_unique<ChannelBank>(*m_engine);
+    // Audioware loads after this plugin (alphabetically), so the depot
+    // junctions and the manifest must exist before it parses them.
+    EnsureDepotJunctions();
+    GenerateBaselineManifest();
 
     NativeBindings::ScheduleRegistration();
     return true;
@@ -41,16 +37,6 @@ bool Plugin::OnLoad(const RED4ext::v1::Sdk* aSdk, RED4ext::v1::PluginHandle aHan
 
 void Plugin::OnUnload()
 {
-    if (m_channels)
-    {
-        m_channels->ShutdownAll();
-    }
-    if (m_engine)
-    {
-        m_engine->Shutdown();
-    }
-    m_channels.reset();
-    m_engine.reset();
 }
 
 void Plugin::LogInfo(const char* aMessage) const

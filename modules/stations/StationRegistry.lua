@@ -89,10 +89,12 @@ function StationRegistry:LoadOne(stationId, position, source)
         return nil, ("group \"%s\" is disabled"):format(config.group)
     end
 
-    local songs = {}
-    if not config.stream.isStream then
-        songs = self:MeasureSongs(stationId, stationPath)
+    -- Web streams are not supported by the Audioware backend.
+    if config.stream.isStream then
+        return nil, "web streams are not supported by the Audioware backend"
     end
+
+    local songs = self:MeasureSongs(stationId, stationPath)
 
     local station = Station({
         logger = self.logger,
@@ -163,7 +165,15 @@ function StationRegistry:LoadAll()
     end
 
     self:SortByIndex()
+    self:WriteAudioManifest()
     self.logger:Infof("%d station(s) active.", #self.stations)
+end
+
+--- Regenerates the Audioware manifest so song lists and station volumes
+--- are correct on the next game launch.
+function StationRegistry:WriteAudioManifest()
+    local Manifest = require("modules/audio/Manifest")
+    Manifest({ files = self.files, logger = self.logger }):Generate(self.stations)
 end
 
 function StationRegistry:SortByIndex()
