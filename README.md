@@ -22,6 +22,9 @@ station packs keep working out of the box (drop-in compatibility).
 - **Hot reload** — re-scan your stations without restarting the game
 - **Station groups** — enable or disable whole packs at once
 - **CET console API** for scripting and companion mods
+- **Game-aware audio** — mirrors the master volume and radio sliders, and
+  mutes custom playback in menus, braindances, Johnny sequences, and
+  loading screens, just like vanilla radio
 - **Native Settings UI** support — reload stations, toggle station groups,
   the legacy import and debug logging right from the game's Mods settings
   menu (optional)

@@ -12,6 +12,7 @@ local Class = require("modules/core/Class")
 local GameAudioSettings = Class.define("GameAudioSettings")
 
 local GROUP = "/audio/volume"
+local MASTER_VOLUME_VAR = "MasterVolume"
 local CAR_RADIO_VAR = "CarRadioVolume"
 local POCKET_RADIO_VAR = "RadioportVolume"
 
@@ -35,6 +36,13 @@ end
 
 function GameAudioSettings:GetPocketRadioVolume()
     return self:ReadVolume(POCKET_RADIO_VAR)
+end
+
+--- The game's master volume slider. Custom audio runs on its own audio
+--- engine, so it must mirror this slider manually or it would ignore the
+--- user's main volume setting.
+function GameAudioSettings:GetMasterVolume()
+    return self:ReadVolume(MASTER_VOLUME_VAR)
 end
 
 --- Picks the volume slider that matches the player's current context.

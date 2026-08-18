@@ -192,7 +192,7 @@ function FrequencyMod:OnUpdate(deltaTime)
         return
     end
 
-    if self.session:IsInGame() and not self.session:IsInMenu() then
+    if self.session:IsInGame() and not self.session:ShouldMuteAudio() then
         self.scheduler:Update(deltaTime)
         self.vehicleManager:Update()
         self.worldManager:Update()
